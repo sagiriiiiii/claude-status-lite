@@ -5,8 +5,8 @@
   "author": {
     "name": "fangfangfang"
   },
-  "homepage": "https://github.com/fangfangfang/claude-status-lite",
-  "repository": "https://github.com/fangfangfang/claude-status-lite",
+  "homepage": "https://github.com/sagiriiiiii/claude-status-lite",
+  "repository": "https://github.com/sagiriiiiii/claude-status-lite",
   "license": "MIT",
   "keywords": ["statusline", "hud", "rate-limit", "context"],
   "skills": "./skills/"

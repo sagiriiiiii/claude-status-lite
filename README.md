@@ -15,25 +15,31 @@ Percentage numbers are colored by severity: green (<70%), yellow (70–85%), red
 
 ## Install
 
-Add to your `~/.claude/settings.json`:
+Inside a Claude Code instance, run:
 
-```json
-{
-  "extraKnownMarketplaces": {
-    "claude-status-lite": {
-      "source": {
-        "source": "github",
-        "repo": "fangfangfang/claude-status-lite"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "claude-status-lite@claude-status-lite": true
-  }
-}
+**Step 1:** Add the marketplace
+
+```
+/plugin marketplace add sagiriiiiii/claude-status-lite
 ```
 
-Then run `/setup` in Claude Code to configure the statusline.
+**Step 2:** Install the plugin
+
+```
+/plugin install claude-status-lite
+```
+
+Then reload plugins:
+
+```
+/reload-plugins
+```
+
+**Step 3:** Configure the statusline
+
+```
+/claude-status-lite:setup
+```
 
 ## Requirements
 
