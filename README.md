@@ -27,7 +27,13 @@ Inside a Claude Code instance, run:
 /plugin install claude-status-lite
 ```
 
-Then restart Claude Code. The statusline will appear automatically.
+Then restart Claude Code.
+
+**Step 3:** Configure the statusline
+
+```
+/claude-status-lite:setup
+```
 
 ## Requirements
 

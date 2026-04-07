@@ -7,9 +7,5 @@
       "Bash(brew install:*)",
       "Bash(gh repo:*)"
     ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "bash -c 'dir=$(ls -d \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\"/plugins/cache/claude-status-lite/claude-status-lite/*/ 2>/dev/null | sort -t. -k1,1n -k2,2n -k3,3n | tail -1); bash \"${dir}statusline.sh\"'"
   }
 }
