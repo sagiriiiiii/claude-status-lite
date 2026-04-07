@@ -27,11 +27,7 @@ Inside a Claude Code instance, run:
 /plugin install claude-status-lite
 ```
 
-Then reload plugins:
-
-```
-/reload-plugins
-```
+Then **restart Claude Code** (skills are not available until restart):
 
 **Step 3:** Configure the statusline
 
