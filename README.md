@@ -2,7 +2,7 @@
 
 A lightweight statusline for Claude Code. Pure bash + jq, no Node.js required.
 
-![preview](preview.png)
+![preview](preview.png?v=2)
 
 Shows three metrics:
 - **Context** — context window usage
