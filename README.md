@@ -2,9 +2,7 @@
 
 A lightweight statusline for Claude Code. Pure bash + jq, no Node.js required.
 
-```
-Context 15% | 5h: 29% (1h23m) | 7d: 32% (1d)
-```
+![screenshot](screenshot.png)
 
 Shows three metrics:
 - **Context** — context window usage
