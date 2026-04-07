@@ -2,7 +2,7 @@
 
 A lightweight statusline for Claude Code. Pure bash + jq, no Node.js required.
 
-![preview](https://raw.githubusercontent.com/sagiriiiiii/claude-status-lite/main/preview.png)
+![preview](https://raw.githubusercontent.com/sagiriiiiii/claude-status-lite/main/preview.png?t=20260407)
 
 Shows three metrics:
 - **Context** — context window usage
