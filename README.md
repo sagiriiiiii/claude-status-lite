@@ -19,17 +19,6 @@ curl -fsSL https://raw.githubusercontent.com/sagiriiiiii/claude-status-lite/main
 
 Then restart Claude Code.
 
-### Via Plugin
-
-Alternatively, install as a Claude Code plugin:
-
-```
-/plugin marketplace add sagiriiiiii/claude-status-lite
-/plugin install claude-status-lite
-```
-
-Then run `/claude-status-lite:setup` and restart.
-
 ## Requirements
 
 - [jq](https://jqlang.github.io/jq/) — `brew install jq` (macOS) or `apt install jq` (Linux)
