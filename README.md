@@ -13,52 +13,22 @@ Percentage numbers are colored by severity: green (<70%), yellow (70–85%), red
 
 ## Install
 
-Inside a Claude Code instance, run:
+```bash
+curl -fsSL https://raw.githubusercontent.com/sagiriiiiii/claude-status-lite/main/install.sh | bash
+```
 
-**Step 1:** Add the marketplace
+Then restart Claude Code.
+
+### Via Plugin
+
+Alternatively, install as a Claude Code plugin:
 
 ```
 /plugin marketplace add sagiriiiiii/claude-status-lite
-```
-
-**Step 2:** Install the plugin
-
-```
 /plugin install claude-status-lite
 ```
 
-Then restart Claude Code.
-
-**Step 3:** Configure the statusline
-
-```
-/claude-status-lite:setup
-```
-
-## Manual Install
-
-If you prefer not to use the plugin system:
-
-**Step 1:** Download the script
-
-```bash
-mkdir -p ~/.claude/claude-status-lite
-curl -o ~/.claude/claude-status-lite/statusline.sh https://raw.githubusercontent.com/sagiriiiiii/claude-status-lite/main/statusline.sh
-```
-
-**Step 2:** Add to `~/.claude/settings.json`
-
-```jsonc
-{
-  // ... other settings
-  "statusLine": {
-    "type": "command",
-    "command": "bash ~/.claude/claude-status-lite/statusline.sh"
-  }
-}
-```
-
-Then restart Claude Code.
+Then run `/claude-status-lite:setup` and restart.
 
 ## Requirements
 
