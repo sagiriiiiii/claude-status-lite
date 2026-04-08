@@ -1,5 +1,5 @@
 #!/bin/bash
-# claude-status-lite installer
+# claude-status-lite installer/uninstaller
 set -e
 
 INSTALL_DIR="$HOME/.claude/claude-status-lite"
@@ -15,7 +15,24 @@ if ! command -v jq &>/dev/null; then
   exit 1
 fi
 
-# Download script
+# Uninstall
+if [ "$1" = "--uninstall" ]; then
+  # Restore backup if exists
+  if [ -f "$INSTALL_DIR/statusline.backup.json" ]; then
+    backup=$(cat "$INSTALL_DIR/statusline.backup.json")
+    jq --argjson sl "$backup" '.statusLine = $sl' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp"
+    mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
+    echo "Restored previous statusLine from backup."
+  elif [ -f "$SETTINGS_FILE" ]; then
+    jq 'del(.statusLine)' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp"
+    mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
+  fi
+  rm -rf "$INSTALL_DIR"
+  echo "Uninstalled. Restart Claude Code to apply."
+  exit 0
+fi
+
+# Install
 mkdir -p "$INSTALL_DIR"
 echo "Downloading statusline.sh..."
 curl -fsSL "$REPO_URL/statusline.sh" -o "$INSTALL_DIR/statusline.sh"

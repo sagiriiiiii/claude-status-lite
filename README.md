@@ -19,6 +19,14 @@ curl -fsSL https://raw.githubusercontent.com/sagiriiiiii/claude-status-lite/main
 
 Then restart Claude Code.
 
+## Uninstall
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sagiriiiiii/claude-status-lite/main/install.sh | bash -s -- --uninstall
+```
+
+If you had a previous statusline, it restores from backup. Otherwise it removes the config and cleans up.
+
 ## Requirements
 
 - [jq](https://jqlang.github.io/jq/) — `brew install jq` (macOS) or `apt install jq` (Linux)
