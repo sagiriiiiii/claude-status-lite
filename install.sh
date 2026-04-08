@@ -44,10 +44,9 @@ if [ ! -f "$SETTINGS_FILE" ]; then
 fi
 
 # Backup existing statusLine if any
-old_statusline=$(jq -r '.statusLine // empty' "$SETTINGS_FILE")
-if [ -n "$old_statusline" ]; then
+if jq -e '.statusLine' "$SETTINGS_FILE" &>/dev/null; then
   echo "Backing up existing statusLine to $INSTALL_DIR/statusline.backup.json"
-  echo "$old_statusline" > "$INSTALL_DIR/statusline.backup.json"
+  jq '.statusLine' "$SETTINGS_FILE" > "$INSTALL_DIR/statusline.backup.json"
 fi
 
 # Write statusLine config
