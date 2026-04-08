@@ -35,6 +35,31 @@ Then restart Claude Code.
 /claude-status-lite:setup
 ```
 
+## Manual Install
+
+If you prefer not to use the plugin system:
+
+**Step 1:** Download the script
+
+```bash
+mkdir -p ~/.claude/claude-status-lite
+curl -o ~/.claude/claude-status-lite/statusline.sh https://raw.githubusercontent.com/sagiriiiiii/claude-status-lite/main/statusline.sh
+```
+
+**Step 2:** Add to `~/.claude/settings.json`
+
+```jsonc
+{
+  // ... other settings
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/claude-status-lite/statusline.sh"
+  }
+}
+```
+
+Then restart Claude Code.
+
 ## Requirements
 
 - [jq](https://jqlang.github.io/jq/) — `brew install jq` (macOS) or `apt install jq` (Linux)
