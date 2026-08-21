@@ -62,8 +62,13 @@ if jq -e '.statusLine' "$SETTINGS_FILE" &>/dev/null; then
   jq '.statusLine' "$SETTINGS_FILE" > "$INSTALL_DIR/statusline.backup.json"
 fi
 
-# Write statusLine config
-jq --arg cmd "$STATUSLINE_CMD" '.statusLine = {"type": "command", "command": $cmd}' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp"
+# Write statusLine config. With stocks, add refreshInterval so quotes keep ticking while the session is idle
+# (Claude Code otherwise only re-runs the statusline on conversation events).
+if [ -n "$STOCKS" ]; then
+  jq --arg cmd "$STATUSLINE_CMD" '.statusLine = {"type": "command", "command": $cmd, "refreshInterval": 2}' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp"
+else
+  jq --arg cmd "$STATUSLINE_CMD" '.statusLine = {"type": "command", "command": $cmd}' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp"
+fi
 mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
 
 # Optional stock watch: write/merge stocks into config.json

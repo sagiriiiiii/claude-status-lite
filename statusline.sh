@@ -88,13 +88,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="${CLAUDE_STATUS_LITE_CONFIG:-$SCRIPT_DIR/config.json}"
 CACHE_FILE="$SCRIPT_DIR/.stock_cache"
 LOCK_FILE="$SCRIPT_DIR/.stock_lock"
+PINYIN_FILE="$SCRIPT_DIR/.stock_pinyin"
 STOCK_API="https://qt.gtimg.cn/utf8/q="
+SEARCH_API="https://smartbox.gtimg.cn/s3/?v=2&t=all&c=1&q="
 
 stock_codes=""
 stock_name="full"
+stock_name_len=2
 stock_show_change="false"
 stock_colorful="false"
-stock_interval=30
+stock_interval=2
 stock_interval_closed=600
 stock_hide_closed="false"
 stock_newline="false"
@@ -108,18 +111,19 @@ load_stock_config() {
     ((.stocks // [])
       | map(if (.[:2] | ascii_downcase) == "us" then "us" + (.[2:] | ascii_upcase) else ascii_downcase end)
       | map(select(test("^(sh|sz|bj)[0-9]{6}$|^hk[0-9]{5}$|^us[A-Z.]+$"))) | join(",")),
-    ([(.stock_name // "full"), (.stock_show_change // false), (.stock_colorful // false),
-      (.stock_interval // 30), (.stock_interval_closed // 600), (.stock_hide_closed // false), (.stock_newline // false)] | map(tostring) | join("\t")),
+    ([(.stock_name // "full"), (.stock_name_len // 2), (.stock_show_change // false), (.stock_colorful // false),
+      (.stock_interval // 2), (.stock_interval_closed // 600), (.stock_hide_closed // false), (.stock_newline // false)] | map(tostring) | join("\t")),
     ((.stock_aliases // {}) | tojson)
   ' "$CONFIG_FILE" 2>/dev/null) || return 1
   stock_codes=$(echo "$cfg" | sed -n 1p)
-  IFS=$'\t' read -r stock_name stock_show_change stock_colorful stock_interval stock_interval_closed stock_hide_closed stock_newline \
+  IFS=$'\t' read -r stock_name stock_name_len stock_show_change stock_colorful stock_interval stock_interval_closed stock_hide_closed stock_newline \
     <<< "$(echo "$cfg" | sed -n 2p)"
   stock_aliases=$(echo "$cfg" | sed -n 3p)
-  case "$stock_interval" in ''|*[!0-9]*) stock_interval=30 ;; esac
+  case "$stock_interval" in ''|*[!0-9]*) stock_interval=2 ;; esac
   case "$stock_interval_closed" in ''|*[!0-9]*) stock_interval_closed=600 ;; esac
-  [ "$stock_interval" -lt 5 ] && stock_interval=5
-  [ "$stock_interval_closed" -lt 5 ] && stock_interval_closed=5
+  [ "$stock_interval" -lt 1 ] && stock_interval=1
+  [ "$stock_interval_closed" -lt 1 ] && stock_interval_closed=1
+  case "$stock_name_len" in ''|*[!0-9]*|0) stock_name_len=2 ;; esac
   [ -n "$stock_codes" ]
 }
 
@@ -169,7 +173,25 @@ fetch_stocks_bg() {
     [ -n "$parsed" ] || exit 0
     printf '%s\n' "$parsed" > "$CACHE_FILE.tmp" && mv -f "$CACHE_FILE.tmp" "$CACHE_FILE"
     rm -f "$LOCK_FILE"
+    [ "$stock_name" = "pinyin" ] && fetch_missing_pinyin
   ) </dev/null >/dev/null 2>&1 &
+}
+
+# Look up pinyin initials (e.g. 上证指数 -> szzs) via Tencent smartbox, one code at a time, cached forever.
+# Response: v_hint="sh~000001~\u4e0a...~szzs~ZS^sz~000001~...~payh~GP-A"; all fields we need are ASCII.
+fetch_missing_pinyin() {
+  local code market sym key raw py
+  IFS=',' read -ra all_codes <<< "$stock_codes"
+  for code in "${all_codes[@]}"; do
+    [ -f "$PINYIN_FILE" ] && grep -q "^${code}"$'\t' "$PINYIN_FILE" && continue
+    market=${code:0:2}
+    sym=$(echo "${code:2}" | tr 'A-Z' 'a-z')
+    raw=$(curl -fsS -m 8 -A "Mozilla/5.0" "${SEARCH_API}${sym}" 2>/dev/null) || continue
+    py=$(echo "$raw" | sed 's/^v_hint="//; s/";*$//' | tr '^' '\n' | awk -F'~' -v m="$market" -v s="$sym" '
+      { c = $2; sub(/\..*/, "", c); if ($1 == m && c == s && $4 != "") { print $4; exit } }')
+    # Cache "-" for not-found so we don't retry every cycle; renderer falls back to mini names
+    printf '%s\t%s\n' "$code" "${py:--}" >> "$PINYIN_FILE"
+  done
 }
 
 # Refresh cache when stale. Outside A-share sessions quotes barely move, so fall back to the slower interval.
@@ -183,9 +205,9 @@ maybe_refresh_stocks() {
   fetch_stocks_bg
 }
 
-# Resolve display name by stock_name mode: full | mini | hidden. Aliases always win when set.
+# Resolve display name by stock_name mode: full | mini | pinyin | hidden. Aliases always win when set.
 stock_display_name() {
-  local code="$1" name="$2" alias
+  local code="$1" name="$2" alias py
   alias=$(echo "$stock_aliases" | jq -r --arg c "$code" '.[$c] // empty' 2>/dev/null)
   if [ -n "$alias" ]; then
     echo "$alias"
@@ -193,9 +215,19 @@ stock_display_name() {
   fi
   case "$stock_name" in
     hidden) ;;
+    pinyin)
+      # First N pinyin initials (上证指数 -> sz); falls back to mini while lookup is pending or not found
+      py=""
+      [ -f "$PINYIN_FILE" ] && py=$(grep -m1 "^${code}"$'\t' "$PINYIN_FILE" | cut -f2)
+      if [ -n "$py" ] && [ "$py" != "-" ]; then
+        echo "${py:0:$stock_name_len}"
+      else
+        jq -rn --arg n "$name" --argjson l "$stock_name_len" '$n[:$l]'
+      fi
+      ;;
     mini)
-      # Truncate to first 2 characters (jq slicing is codepoint-safe, unlike bash 3.2 in a C locale)
-      jq -rn --arg n "$name" '$n[:2]'
+      # jq slicing is codepoint-safe, unlike bash 3.2 in a C locale
+      jq -rn --arg n "$name" --argjson l "$stock_name_len" '$n[:$l]'
       ;;
     *) echo "$name" ;;
   esac

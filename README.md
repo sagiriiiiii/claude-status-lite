@@ -40,9 +40,10 @@ Or create/edit `~/.claude/claude-status-lite/config.json` by hand:
   "stocks": ["sh000001", "sz399006", "hk00700", "usAAPL"],
   "stock_aliases": { "sh000001": "大盘" },
   "stock_name": "full",
+  "stock_name_len": 2,
   "stock_show_change": false,
   "stock_colorful": false,
-  "stock_interval": 30,
+  "stock_interval": 2,
   "stock_interval_closed": 600,
   "stock_hide_closed": false,
   "stock_newline": false
@@ -53,15 +54,17 @@ Or create/edit `~/.claude/claude-status-lite/config.json` by hand:
 | --- | --- | --- |
 | `stocks` | `[]` | Codes to watch. A-share `sh600519` / `sz000001` / `bj899050` (stocks, ETFs, indexes), HK `hk00700`, US `usAAPL`. Empty = feature off. |
 | `stock_aliases` | `{}` | Custom short names, e.g. `{"sh601318": "平安"}`. |
-| `stock_name` | `"full"` | `full` shows the real name, `mini` shows the first 2 chars, `hidden` shows numbers only (maximum stealth). |
+| `stock_name` | `"full"` | `full` real name · `mini` first N chars (`上证`) · `pinyin` first N pinyin initials (`sz`, looked up once via Tencent search and cached) · `hidden` numbers only. |
+| `stock_name_len` | `2` | How many chars/initials `mini` and `pinyin` keep. |
 | `stock_show_change` | `false` | Append the change value, e.g. `↗0.13%(5.02)`. |
 | `stock_colorful` | `false` | Color quotes A-share style: red up, green down. Off by default to stay low-key. |
-| `stock_interval` | `30` | Refresh interval in seconds during A-share trading sessions (min 5). |
+| `stock_interval` | `2` | Quote refresh interval in seconds during A-share trading sessions (min 1). |
 | `stock_interval_closed` | `600` | Refresh interval outside trading sessions. |
 | `stock_hide_closed` | `false` | Hide the stock segment outside market hours (weekdays 09:15–15:00 Asia/Shanghai). |
 | `stock_newline` | `false` | Put stocks on a second line instead of appending to the first. |
 
 Notes:
+- Claude Code only re-runs the statusline on conversation events, so to keep quotes ticking while you're idle the installer sets `statusLine.refreshInterval: 2` in `~/.claude/settings.json` when `--stocks` is used. If you configured stocks by hand, add that field yourself (minimum `1`).
 - Quotes come from Tencent's public finance API (`qt.gtimg.cn`), the same source used by popular "watch stock" editor extensions. No key required.
 - Fetching runs in a detached background process and is cached on disk, so the statusline itself stays instant and never blocks Claude Code.
 - Config path can be overridden with the `CLAUDE_STATUS_LITE_CONFIG` env var.

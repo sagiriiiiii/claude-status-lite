@@ -3,3 +3,4 @@ config.json
 .stock_cache
 .stock_cache.tmp
 .stock_lock
+.stock_pinyin
